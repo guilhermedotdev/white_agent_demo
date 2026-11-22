@@ -1,0 +1,181 @@
+{
+  "components": [
+    {
+      "name": "VehicleController",
+      "depends_on": [
+        "VehicleService"
+      ],
+      "responsibility": "Expor endpoints REST para cadastro, listagem e consulta de veículos."
+    },
+    {
+      "name": "EmployeeController",
+      "depends_on": [
+        "EmployeeService"
+      ],
+      "responsibility": "Expor endpoints REST para cadastro e listagem de colaboradores."
+    },
+    {
+      "name": "ReservationController",
+      "depends_on": [
+        "ReservationService"
+      ],
+      "responsibility": "Expor endpoints REST para criação, listagem, consulta de disponibilidade e cancelamento de reservas."
+    },
+    {
+      "name": "VehicleService",
+      "depends_on": [
+        "VehicleRepository"
+      ],
+      "responsibility": "Implementar regras de negócio relacionadas a veículos, incluindo validação de placa única e filtragem por situação."
+    },
+    {
+      "name": "EmployeeService",
+      "depends_on": [
+        "EmployeeRepository"
+      ],
+      "responsibility": "Implementar regras de negócio relacionadas a colaboradores."
+    },
+    {
+      "name": "ReservationService",
+      "depends_on": [
+        "ReservationRepository",
+        "VehicleService"
+      ],
+      "responsibility": "Gerenciar regras de negócio para reservas, incluindo validação de conflitos, horários válidos, situação do veículo e cancelamento."
+    },
+    {
+      "name": "VehicleRepository",
+      "depends_on": [],
+      "responsibility": "Acesso e manipulação dos dados da tabela vehicles no banco de dados."
+    },
+    {
+      "name": "EmployeeRepository",
+      "depends_on": [],
+      "responsibility": "Acesso e manipulação dos dados da tabela employees no banco de dados."
+    },
+    {
+      "name": "ReservationRepository",
+      "depends_on": [],
+      "responsibility": "Acesso e manipulação dos dados da tabela reservations no banco de dados."
+    },
+    {
+      "name": "Frontend Angular App",
+      "depends_on": [
+        "Backend API"
+      ],
+      "responsibility": "Interface web para usuários realizarem cadastro, consulta, reserva e cancelamento de veículos e colaboradores, seguindo as regras de negócio."
+    }
+  ],
+  "api_endpoints": [
+    {
+      "path": "/api/vehicles",
+      "method": "POST",
+      "purpose": "Cadastrar um novo veículo com placa única, marca, modelo, ano e situação.",
+      "request_body": "{ \"plate\": \"string\", \"brand\": \"string\", \"model\": \"string\", \"year\": integer, \"status\": \"ACTIVE\" | \"INACTIVE\" }",
+      "response_body": "{ \"id\": integer, \"plate\": \"string\", \"brand\": \"string\", \"model\": \"string\", \"year\": integer, \"status\": \"ACTIVE\" | \"INACTIVE\" }"
+    },
+    {
+      "path": "/api/vehicles",
+      "method": "GET",
+      "purpose": "Listar veículos, opcionalmente filtrando por situação (ativo/inativo).",
+      "request_body": "none",
+      "response_body": "[ { \"id\": integer, \"plate\": \"string\", \"brand\": \"string\", \"model\": \"string\", \"year\": integer, \"status\": \"ACTIVE\" | \"INACTIVE\" } ]"
+    },
+    {
+      "path": "/api/employees",
+      "method": "POST",
+      "purpose": "Cadastrar um novo colaborador com nome e e-mail.",
+      "request_body": "{ \"name\": \"string\", \"email\": \"string\" }",
+      "response_body": "{ \"id\": integer, \"name\": \"string\", \"email\": \"string\" }"
+    },
+    {
+      "path": "/api/employees",
+      "method": "GET",
+      "purpose": "Listar todos os colaboradores cadastrados.",
+      "request_body": "none",
+      "response_body": "[ { \"id\": integer, \"name\": \"string\", \"email\": \"string\" } ]"
+    },
+    {
+      "path": "/api/reservations/availability",
+      "method": "GET",
+      "purpose": "Consultar veículos disponíveis para reserva em um período informado.",
+      "request_body": "none",
+      "response_body": "[ { \"vehicleId\": integer, \"plate\": \"string\", \"brand\": \"string\", \"model\": \"string\", \"year\": integer } ]"
+    },
+    {
+      "path": "/api/reservations",
+      "method": "POST",
+      "purpose": "Criar uma nova reserva para um veículo ativo, validando conflitos e horários.",
+      "request_body": "{ \"vehicleId\": integer, \"employeeId\": integer, \"startDateTime\": \"string (ISO 8601, America/Sao_Paulo)\", \"endDateTime\": \"string (ISO 8601, America/Sao_Paulo)\", \"purpose\": \"string\" }",
+      "response_body": "{ \"id\": integer, \"vehicleId\": integer, \"employeeId\": integer, \"startDateTime\": \"string\", \"endDateTime\": \"string\", \"purpose\": \"string\", \"status\": \"ACTIVE\" }"
+    },
+    {
+      "path": "/api/reservations",
+      "method": "GET",
+      "purpose": "Listar reservas futuras e em andamento, excluindo canceladas.",
+      "request_body": "none",
+      "response_body": "[ { \"id\": integer, \"vehicleId\": integer, \"employeeId\": integer, \"startDateTime\": \"string\", \"endDateTime\": \"string\", \"purpose\": \"string\", \"status\": \"ACTIVE\" } ]"
+    },
+    {
+      "path": "/api/reservations/{id}/cancel",
+      "method": "POST",
+      "purpose": "Cancelar uma reserva existente e liberar o período para novas reservas.",
+      "request_body": "none",
+      "response_body": "{ \"id\": integer, \"status\": \"CANCELLED\" }"
+    }
+  ],
+  "data_entities": [
+    {
+      "name": "Vehicle",
+      "fields": [
+        "id: integer",
+        "plate: string (unique)",
+        "brand: string",
+        "model: string",
+        "year: integer",
+        "status: enum (ACTIVE, INACTIVE)"
+      ]
+    },
+    {
+      "name": "Employee",
+      "fields": [
+        "id: integer",
+        "name: string",
+        "email: string"
+      ]
+    },
+    {
+      "name": "Reservation",
+      "fields": [
+        "id: integer",
+        "vehicleId: integer (FK)",
+        "employeeId: integer (FK)",
+        "startDateTime: timestamp with time zone",
+        "endDateTime: timestamp with time zone",
+        "purpose: string",
+        "status: enum (ACTIVE, CANCELLED)"
+      ]
+    }
+  ],
+  "technology_stack": {
+    "backend": "Java 21, Spring Boot 3, Spring Web, Spring Data JPA, Bean Validation, Gradle, JUnit 5, Mockito",
+    "database": "PostgreSQL 16",
+    "frontend": "Angular 17, TypeScript, standalone components, Reactive Forms, HttpClient, responsive CSS",
+    "infrastructure": "Local deployment with Gradle and Angular CLI, GitHub repository with Draft Pull Request branch"
+  },
+  "architecture_risks": [
+    "Ausência de autenticação pode permitir uso indevido do sistema.",
+    "Conflitos de reserva podem ocorrer se controle transacional não for rigoroso.",
+    "Fuso horário America/Sao_Paulo deve ser consistentemente aplicado para evitar erros de horário.",
+    "Sem cache, consultas podem ter latência maior em picos de uso.",
+    "Validação insuficiente no frontend pode levar a erros que só são detectados no backend."
+  ],
+  "security_decisions": [
+    "Não implementar autenticação no MVP conforme requisito.",
+    "Validação rigorosa no backend para evitar reservas sobrepostas e horários inválidos.",
+    "Retornar HTTP 409 em caso de conflito de reserva para informar cliente adequadamente.",
+    "Sanitização e validação de dados de entrada para evitar injeção e erros.",
+    "Uso de HTTPS recomendado para comunicação segura, mesmo sem autenticação."
+  ],
+  "architecture_summary": "A arquitetura do MVP WhiteFleet é baseada em uma API RESTful implementada em Java 21 com Spring Boot 3, seguindo a estrutura controller-service-repository-entity-DTO para separação clara de responsabilidades. O banco de dados PostgreSQL 16 armazena as entidades Vehicle, Employee e Reservation com chaves estrangeiras e índices para garantir integridade e performance. O frontend em Angular 17 oferece interfaces para cadastro, consulta, reserva e cancelamento, consumindo a API backend. As regras de negócio são implementadas no serviço de reservas para garantir ausência de conflitos, validade dos horários e situação dos veículos. A comunicação é feita via endpoints REST padronizados, sem autenticação, com mensagens de erro amigáveis e uso consistente do fuso America/Sao_Paulo. Testes unitários cobrem as regras críticas, e a documentação orienta execução local. O código é versionado no GitHub com branch exclusiva para Draft Pull Request, sem deploy automático, garantindo controle e qualidade no desenvolvimento."
+}

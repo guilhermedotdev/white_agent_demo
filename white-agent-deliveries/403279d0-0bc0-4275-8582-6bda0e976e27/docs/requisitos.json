@@ -1,0 +1,76 @@
+{
+  "summary": "Desenvolver um MVP web para agendamento de veículos de frota corporativa, incluindo cadastro de veículos e colaboradores, consulta de disponibilidade, criação, listagem e cancelamento de reservas, com regras de negócio para evitar conflitos e garantir integridade dos dados. O backend será em Java com Spring Boot e PostgreSQL, e o frontend em Angular, com testes unitários e documentação, sem autenticação ou funcionalidades extras.",
+  "project_name": "WhiteFleet - Agendamento de Veículos",
+  "business_rules": [
+    "Não permitir reservas sobrepostas para o mesmo veículo.",
+    "Rejeitar reservas com horários inválidos (datas no passado, horários finais anteriores aos iniciais).",
+    "Não permitir reservas para veículos com situação inativa.",
+    "Ao cancelar uma reserva, liberar o período correspondente para novas reservas.",
+    "Em caso de conflito de horário, retornar HTTP 409.",
+    "Apresentar todas as datas e horários no fuso America/Sao_Paulo."
+  ],
+  "open_questions": [],
+  "analysis_status": "READY_FOR_REVIEW",
+  "functional_requirements": [
+    {
+      "id": "RF-001",
+      "description": "Cadastrar veículos com placa única, marca, modelo, ano e situação (ativo/inativo).",
+      "acceptance_criteria": [
+        "Veículos cadastrados devem possuir placa única.",
+        "Veículos podem ser listados filtrando por situação (ativo/inativo)."
+      ]
+    },
+    {
+      "id": "RF-002",
+      "description": "Cadastrar colaboradores com nome e e-mail.",
+      "acceptance_criteria": [
+        "Colaboradores podem ser cadastrados com nome e e-mail válidos.",
+        "Colaboradores cadastrados podem ser listados."
+      ]
+    },
+    {
+      "id": "RF-003",
+      "description": "Consultar disponibilidade de veículos por período informado.",
+      "acceptance_criteria": [
+        "Consulta retorna veículos disponíveis no período solicitado.",
+        "Veículos com reservas sobrepostas não são listados como disponíveis."
+      ]
+    },
+    {
+      "id": "RF-004",
+      "description": "Criar reservas informando veículo, colaborador, data e hora inicial, data e hora final e finalidade.",
+      "acceptance_criteria": [
+        "Reserva é criada somente se o veículo estiver ativo.",
+        "Reserva não pode ser criada se houver conflito de horário com outra reserva do mesmo veículo.",
+        "Reserva não pode ser criada para período no passado.",
+        "Reserva aceita horários válidos e retorna erro HTTP 409 em caso de conflito."
+      ]
+    },
+    {
+      "id": "RF-005",
+      "description": "Listar reservas futuras e em andamento.",
+      "acceptance_criteria": [
+        "Lista exibe todas as reservas com data/hora inicial maior ou igual ao momento atual.",
+        "Reservas canceladas não aparecem na lista."
+      ]
+    },
+    {
+      "id": "RF-006",
+      "description": "Cancelar reservas e liberar os períodos correspondentes para novas reservas.",
+      "acceptance_criteria": [
+        "Reserva cancelada não aparece mais como ocupada para o veículo.",
+        "Período da reserva cancelada fica disponível para novas reservas."
+      ]
+    }
+  ],
+  "non_functional_requirements": [
+    "API REST implementada com Java 21, Spring Boot 3, seguindo arquitetura controller, service, repository, entity e DTO.",
+    "Banco de dados PostgreSQL 16 com tabelas vehicles, employees e reservations, incluindo chaves estrangeiras e índices para otimização de consultas.",
+    "Frontend em Angular 17 com TypeScript, usando componentes standalone, Reactive Forms e HttpClient, com CSS responsivo.",
+    "Testes unitários implementados com JUnit 5 e Mockito para regras de negócio.",
+    "Documentação clara para execução local do sistema.",
+    "Publicação do código em branch exclusiva no GitHub com Draft Pull Request, sem merge ou deploy automático.",
+    "Apresentação de mensagens de erro amigáveis ao usuário.",
+    "Todas as datas e horários apresentados no fuso America/Sao_Paulo."
+  ]
+}

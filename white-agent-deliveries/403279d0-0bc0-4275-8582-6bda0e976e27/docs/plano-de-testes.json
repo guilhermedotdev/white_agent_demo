@@ -1,0 +1,185 @@
+{
+  "risks": [
+    "Cadastro de veículos pode permitir placas duplicadas se validação não for rigorosa.",
+    "Reservas podem ser criadas para veículos inativos se validação não for aplicada no backend.",
+    "Conflitos de horário podem não ser detectados corretamente, permitindo reservas sobrepostas.",
+    "Datas e horários inválidos podem ser aceitos, causando inconsistências no sistema.",
+    "Cancelamento de reservas pode não liberar corretamente o período para novas reservas.",
+    "Falta de autenticação pode permitir uso indevido do sistema.",
+    "IDs de veículos e colaboradores inseridos manualmente podem causar erros de referência ou inconsistências.",
+    "Ausência de paginação e filtros pode causar lentidão e dificuldade na navegação com muitos registros."
+  ],
+  "summary": "O plano de testes cobre funcionalidades principais do sistema WhiteFleet para agendamento de veículos, incluindo cadastro de veículos e colaboradores, consulta de disponibilidade, criação, listagem e cancelamento de reservas. São contemplados testes funcionais para validação de regras de negócio, testes de integração entre frontend e backend via API REST, e cenários negativos para garantir robustez contra dados inválidos, conflitos de horário e restrições de negócio. O plano também identifica riscos críticos e propõe exemplos de automação para acelerar a validação contínua das regras essenciais.",
+  "test_cases": [
+    {
+      "id": "TC-001",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Cadastro de Veículos.",
+        "Preencher placa única, marca, modelo, ano e situação ativo.",
+        "Enviar formulário de cadastro."
+      ],
+      "title": "Cadastrar veículo com dados válidos",
+      "expected_result": "Veículo é cadastrado com sucesso e aparece na lista de veículos ativos."
+    },
+    {
+      "id": "TC-002",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Cadastro de Veículos.",
+        "Tentar cadastrar veículo com placa já existente.",
+        "Enviar formulário de cadastro."
+      ],
+      "title": "Impedir cadastro de veículo com placa duplicada",
+      "expected_result": "Sistema exibe mensagem de erro informando que a placa já está cadastrada."
+    },
+    {
+      "id": "TC-003",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Cadastro de Colaboradores.",
+        "Preencher nome e e-mail válidos.",
+        "Enviar formulário de cadastro."
+      ],
+      "title": "Cadastrar colaborador com dados válidos",
+      "expected_result": "Colaborador é cadastrado com sucesso e aparece na lista de colaboradores."
+    },
+    {
+      "id": "TC-004",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Consulta de Disponibilidade.",
+        "Informar período válido sem reservas conflitantes.",
+        "Executar consulta."
+      ],
+      "title": "Consultar veículos disponíveis em período válido",
+      "expected_result": "Lista exibe veículos ativos disponíveis no período informado."
+    },
+    {
+      "id": "TC-005",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Lista e Criação de Reservas.",
+        "Criar reserva para veículo ativo, colaborador válido, período futuro sem conflito e finalidade.",
+        "Enviar reserva."
+      ],
+      "title": "Criar reserva válida",
+      "expected_result": "Reserva é criada com sucesso e aparece na lista de reservas futuras."
+    },
+    {
+      "id": "TC-006",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Lista e Criação de Reservas.",
+        "Tentar criar reserva para veículo inativo.",
+        "Enviar reserva."
+      ],
+      "title": "Impedir reserva para veículo inativo",
+      "expected_result": "Sistema retorna erro e mensagem informando que veículo está inativo."
+    },
+    {
+      "id": "TC-007",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Lista e Criação de Reservas.",
+        "Tentar criar reserva com período que conflita com reserva existente para mesmo veículo.",
+        "Enviar reserva."
+      ],
+      "title": "Impedir reserva com conflito de horário",
+      "expected_result": "Sistema retorna erro HTTP 409 e mensagem de conflito de horário."
+    },
+    {
+      "id": "TC-008",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Lista e Criação de Reservas.",
+        "Tentar criar reserva com data/hora inicial no passado.",
+        "Enviar reserva."
+      ],
+      "title": "Impedir reserva para período no passado",
+      "expected_result": "Sistema retorna erro e mensagem informando que período é inválido."
+    },
+    {
+      "id": "TC-009",
+      "type": "Funcional",
+      "steps": [
+        "Acessar a tela Lista e Criação de Reservas.",
+        "Cancelar reserva existente.",
+        "Confirmar cancelamento."
+      ],
+      "title": "Cancelar reserva e liberar período",
+      "expected_result": "Reserva desaparece da lista e período fica disponível para novas reservas."
+    },
+    {
+      "id": "TC-010",
+      "type": "Integração",
+      "steps": [
+        "Enviar requisição GET para /api/reservations/availability com período válido.",
+        "Verificar resposta com lista de veículos disponíveis."
+      ],
+      "title": "API consulta disponibilidade retorna veículos corretos",
+      "expected_result": "Resposta contém somente veículos ativos sem reservas conflitantes no período."
+    },
+    {
+      "id": "TC-011",
+      "type": "Integração",
+      "steps": [
+        "Enviar requisição POST para /api/reservations com dados válidos.",
+        "Verificar resposta de sucesso e criação da reserva."
+      ],
+      "title": "API cria reserva com dados válidos",
+      "expected_result": "Reserva é criada e persistida no banco de dados."
+    },
+    {
+      "id": "TC-012",
+      "type": "Integração",
+      "steps": [
+        "Enviar requisição POST para /api/reservations com dados que causam conflito de horário.",
+        "Verificar resposta HTTP 409."
+      ],
+      "title": "API rejeita reserva com conflito de horário",
+      "expected_result": "Resposta HTTP 409 é retornada com mensagem de erro apropriada."
+    },
+    {
+      "id": "TC-013",
+      "type": "Negativo",
+      "steps": [
+        "Tentar cadastrar colaborador com e-mail inválido.",
+        "Enviar formulário."
+      ],
+      "title": "Validar e-mail inválido no cadastro de colaborador",
+      "expected_result": "Sistema exibe mensagem de erro de validação de e-mail."
+    },
+    {
+      "id": "TC-014",
+      "type": "Negativo",
+      "steps": [
+        "Tentar consultar disponibilidade com datas inválidas (data final anterior à inicial).",
+        "Executar consulta."
+      ],
+      "title": "Validar datas inválidas na consulta de disponibilidade",
+      "expected_result": "Sistema exibe mensagem de erro informando datas inválidas."
+    }
+  ],
+  "test_strategy": [
+    "Testes funcionais para validar regras de negócio em telas de cadastro, consulta e reservas.",
+    "Testes de integração para validar comunicação e respostas corretas da API REST.",
+    "Testes negativos para garantir tratamento adequado de dados inválidos e conflitos.",
+    "Testes de regressão automatizados para regras críticas como conflito de reservas e validação de dados.",
+    "Testes exploratórios para identificar possíveis falhas não previstas nas regras.",
+    "Testes de usabilidade para verificar mensagens de erro e sucesso amigáveis."
+  ],
+  "execution_status": "NOT_EXECUTED",
+  "automation_samples": [
+    {
+      "name": "ReservaConflictTest.java",
+      "content": "import static org.junit.jupiter.api.Assertions.*;\nimport org.junit.jupiter.api.Test;\nimport java.time.LocalDateTime;\n\npublic class ReservaConflictTest {\n\n    @Test\n    public void shouldDetectConflictWhenOverlappingReservations() {\n        LocalDateTime start1 = LocalDateTime.of(2024, 6, 10, 10, 0);\n        LocalDateTime end1 = LocalDateTime.of(2024, 6, 10, 12, 0);\n        LocalDateTime start2 = LocalDateTime.of(2024, 6, 10, 11, 0);\n        LocalDateTime end2 = LocalDateTime.of(2024, 6, 10, 13, 0);\n\n        boolean conflict = ReservationService.isConflict(start1, end1, start2, end2);\n\n        assertTrue(conflict, \"Deve detectar conflito entre reservas sobrepostas\");\n    }\n\n    @Test\n    public void shouldNotDetectConflictWhenReservationsDoNotOverlap() {\n        LocalDateTime start1 = LocalDateTime.of(2024, 6, 10, 8, 0);\n        LocalDateTime end1 = LocalDateTime.of(2024, 6, 10, 9, 0);\n        LocalDateTime start2 = LocalDateTime.of(2024, 6, 10, 10, 0);\n        LocalDateTime end2 = LocalDateTime.of(2024, 6, 10, 11, 0);\n\n        boolean conflict = ReservationService.isConflict(start1, end1, start2, end2);\n\n        assertFalse(conflict, \"Não deve detectar conflito quando reservas não se sobrepõem\");\n    }\n}",
+      "language": "Java"
+    },
+    {
+      "name": "AvailabilityApiTest.ts",
+      "content": "import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';\nimport { TestBed } from '@angular/core/testing';\nimport { ReservationService } from './reservation.service';\n\ndescribe('ReservationService', () => {\n  let service: ReservationService;\n  let httpMock: HttpTestingController;\n\n  beforeEach(() => {\n    TestBed.configureTestingModule({\n      imports: [HttpClientTestingModule],\n      providers: [ReservationService]\n    });\n    service = TestBed.inject(ReservationService);\n    httpMock = TestBed.inject(HttpTestingController);\n  });\n\n  it('should fetch available vehicles for given period', () => {\n    const mockResponse = [{ id: 1, placa: 'ABC1234', situacao: 'ativo' }];\n    service.getAvailability('2024-06-10T10:00', '2024-06-10T12:00').subscribe(vehicles => {\n      expect(vehicles.length).toBe(1);\n      expect(vehicles[0].placa).toBe('ABC1234');\n    });\n\n    const req = httpMock.expectOne('/api/reservations/availability?start=2024-06-10T10:00&end=2024-06-10T12:00');\n    expect(req.request.method).toBe('GET');\n    req.flush(mockResponse);\n  });\n\n  afterEach(() => {\n    httpMock.verify();\n  });\n});",
+      "language": "TypeScript"
+    }
+  ]
+}
